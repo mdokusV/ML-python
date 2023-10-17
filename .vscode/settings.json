@@ -3,6 +3,7 @@
         "arange",
         "cmap",
         "cstride",
+        "exceptiongroup",
         "figsize",
         "iloc",
         "linewidth",

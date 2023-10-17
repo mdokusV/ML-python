@@ -10,8 +10,8 @@ DIR = os.path.dirname(__file__)
 def join_path(filename: str) -> str:
     return os.path.join(DIR, filename)
 
+
 data = pd.read_csv(join_path("data2.csv"), header=None)
-print(data)
 
 x = data.iloc[:, 1]
 y = data.iloc[:, 3]

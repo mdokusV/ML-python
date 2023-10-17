@@ -54,24 +54,39 @@ def gradient_descent(h, cost_fun, theta, x, y, alpha, eps):
 best_theta, history = gradient_descent(
     hypothesis, cost, [0.0, 0.0], x, y, alpha=0.001, eps=0.001
 )
-print(len(history), history[-1])
+# ZAD 1 / ZAD 2
+print(
+    f"Theta for optimal alpha=0.001, eps=0.001: theta{best_theta}, cost: {history[-1][0]}\n"
+)
 
-# plt.plot(x, y, "o")
-# plt.plot(x, hypothesis(best_theta, x))
-# plt.show()
+plt.plot(x, y, "o")
+plt.plot(x, hypothesis(best_theta, x))
+plt.show()
 
-epsilons = np.linspace(0.0001, 0.1, 100)
-cost_x_eps = []
+epsilons = np.linspace(0.000001, 0.001, 50)
+cost_x_eps = [[], []]
 
-for eps in epsilons:
+
+for ind, eps in enumerate(epsilons):
+    if ind % 10 == 0:
+        print(ind / len(epsilons) * 100, "%")
     try:
         _, history = gradient_descent(
-            hypothesis, cost, [0.0, 0.0], x, y, alpha=0.001, eps=eps
+            hypothesis, cost, [0.0, 0.0], x, y, alpha=0.005, eps=eps
         )
         # print(eps, history[-1][0])
-        cost_x_eps.append([eps, history[-1][0]])
+        cost_x_eps[0].append(eps)
+        cost_x_eps[1].append(history[-1][0])
     except OverflowError:
-        break
+        continue
+print(100, "%")
 
-plt.plot(cost_x_eps[:][0], cost_x_eps[:][1])
+# ZAD 3
+plt.plot(cost_x_eps[0], cost_x_eps[1])
 plt.show()
+
+# ZAD 4
+fire = [50, 100, 200]
+for i in fire:
+    out = hypothesis(best_theta, i)
+    print(f"Fire: {i}, theft: {out}")
