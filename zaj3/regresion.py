@@ -3,6 +3,8 @@ from exceptiongroup import catch
 from matplotlib import pyplot as plt
 import numpy as np
 
+# TODO: TQDM - pasek postêpu
+
 import pandas as pd
 
 DIR = os.path.dirname(__file__)
