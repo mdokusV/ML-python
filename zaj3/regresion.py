@@ -3,7 +3,7 @@ from exceptiongroup import catch
 from matplotlib import pyplot as plt
 import numpy as np
 
-# TODO: TQDM - pasek postêpu
+# TODO: TQDM - pasek postÄ™pu
 
 import pandas as pd
 
