@@ -1,11 +1,16 @@
 {
     "cSpell.words": [
         "arange",
+        "astype",
         "cmap",
         "cstride",
+        "dropna",
         "exceptiongroup",
         "figsize",
+        "fillna",
         "iloc",
+        "isin",
+        "isna",
         "linewidth",
         "meshgrid",
         "mplot",
