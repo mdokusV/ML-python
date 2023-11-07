@@ -8,6 +8,7 @@
         "exceptiongroup",
         "figsize",
         "fillna",
+        "fscore",
         "iloc",
         "isin",
         "isna",
