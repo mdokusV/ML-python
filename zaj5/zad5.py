@@ -90,7 +90,7 @@ y_predicted = model.predict(x_test)
 precision, recall, fscore, _ = precision_recall_fscore_support(
     y_expected, y_predicted, pos_label=1, average="binary"
 )
-
+print("\nSingle test model:")
 print(f"Precision:{precision}")
 print(f"Recall:{recall}")
 print(f"F-score:{fscore}")
