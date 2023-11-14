@@ -75,6 +75,7 @@ data_train, data_test = train_test_split(all_data, test_size=0.1)
 # Train model
 FEATURES = all_data.columns[1:]
 y_train = pd.DataFrame(data_train["Survived"])
+y_train = np.ravel(y_train)
 x_train = pd.DataFrame(data_train[FEATURES])
 model = LogisticRegression(max_iter=100000)
 
@@ -99,6 +100,19 @@ score = model.score(x_test, y_expected)
 
 print(f"Model score: {score}")
 
+# Train model from all data for cross validation
+FEATURES = all_data.columns[1:]
+y_train = pd.DataFrame(all_data["Survived"])
+y_train = np.ravel(y_train)
+x_train = pd.DataFrame(all_data[FEATURES])
+model = LogisticRegression(max_iter=100000)
+
 # cross validate model
-# out = cross_validate(model, x_train, y_train, cv=10, scoring="f1")
-# print(out.get("test_score").mean())
+print("\nCross validation:")
+out = cross_validate(
+    model, x_train, y_train, cv=10, scoring=("accuracy", "precision", "recall", "f1")
+)
+print(f"Accuracy: {out.get('test_accuracy').mean()}")
+print(f"Precision: {out.get('test_precision').mean()}")
+print(f"Recall: {out.get('test_recall').mean()}")
+print(f"F-score: {out.get('test_f1').mean()}")
