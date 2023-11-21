@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
-data = pd.read_csv("zaj6/data6.tsv", delimiter="\t", header=None, names=["x", "y"])
+data = pd.read_csv("data6.tsv", delimiter="\t", header=None, names=["x", "y"])
 
 X = data[["x"]]
 y = data["y"]
