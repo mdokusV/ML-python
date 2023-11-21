@@ -15,7 +15,10 @@
         "linewidth",
         "meshgrid",
         "mplot",
+        "ndarray",
         "rstride",
-        "toolkits"
+        "toolkits",
+        "xlabel",
+        "ylabel"
     ]
 }
