@@ -25,15 +25,15 @@ scaled_data = pd.DataFrame(
     data=scaler.fit_transform(all_data), columns=all_data.columns
 )
 x_param = scaled_data[scaled_data.columns[:-1]]
-y_param = scaled_data[scaled_data.columns[-1]]
+# y_param = scaled_data[scaled_data.columns[-1]]
 
 # x_param = all_data[all_data.columns[:-1]]
-# y_param = all_data[all_data.columns[-1]]
+y_param = all_data[all_data.columns[-1]]
 
 kf = KFold(n_splits=NUM_FOLDS, shuffle=True, random_state=42)
 
 
-model_with_ridge = make_pipeline(PolynomialFeatures(degree=1), Ridge(alpha=3.0))
+model_with_ridge = make_pipeline(PolynomialFeatures(degree=1), Ridge(alpha=10.0))
 score_ridge = -cross_val_score(
     model_with_ridge,
     x_param,
