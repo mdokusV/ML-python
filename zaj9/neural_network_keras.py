@@ -97,6 +97,12 @@ model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_dat
 # Evaluate the model on the test set
 test_results = model.evaluate(X_test, y_test)
 
+print("Test Results:")
+print(f"Loss: {test_results[0]}")
+print(f"Accuracy: {test_results[1]}")
+print(f"Precision: {test_results[2]}")
+print(f"Recall: {test_results[3]}")
+
 # Get predictions on the test set
 y_test_pred = model.predict(X_test)
 
@@ -112,9 +118,13 @@ test_results_df = pd.DataFrame({
 
 # Add an index column to X_test for joining
 X_test_with_index = X_test.reset_index(drop=True)
+X_test_with_index = X_test_with_index['PassengerId']
 
 # Join X_test with the test results DataFrame on the index
 joined_test_data = pd.concat([X_test_with_index, test_results_df], axis=1)
+all_data_with_results = pd.merge(copy_all_data, joined_test_data, left_on='PassengerId', right_on='PassengerId')
+all_data_with_results = all_data_with_results.drop(['Survived_x'], axis=1)
+
 
 # Print the joined DataFrame
-print(joined_test_data.head(10))
+print(all_data_with_results.head(10))
