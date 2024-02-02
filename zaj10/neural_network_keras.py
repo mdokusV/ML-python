@@ -4,15 +4,36 @@ import pandas as pd
 
 from icecream import ic
 from sklearn.discriminant_analysis import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import classification_report
 
 
 from sklearn.model_selection import train_test_split
 import keras
 from keras import layers
 from keras.callbacks import ModelCheckpoint
+from keras import backend as K
+from sklearn.pipeline import make_pipeline
+
+
+def f1_score(y_true, y_pred):
+    """
+    Function to calculate the F1 score.
+    """
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+
+    precision = true_positives / (predicted_positives + K.epsilon())
+    recall = true_positives / (possible_positives + K.epsilon())
+
+    f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
+    return f1
+
 
 RELOAD = True
-SPECIAL_OUTPUT = False
+SPECIAL_OUTPUT_VERBOSE = False
+RANDOM_STATE = 12
 
 part_one_data = pd.read_csv(
     "train.csv",
@@ -30,7 +51,7 @@ part_two_data_no_survived.insert(0, "Survived", part_two_data_only_survived["Sur
 
 all_data = pd.concat([part_one_data, part_two_data_no_survived])
 copy_all_data = all_data
-ic(copy_all_data.count()[0])
+ic(copy_all_data.shape[0])
 
 
 def preprocess(all_data: pd.DataFrame) -> pd.DataFrame:
@@ -91,7 +112,7 @@ def preprocess(all_data: pd.DataFrame) -> pd.DataFrame:
 
 
 all_data = preprocess(all_data)
-ic(all_data.count()[0])
+ic(all_data.shape[0])
 
 # Split data into train and test
 y_vector = pd.DataFrame(all_data["Survived"])
@@ -107,16 +128,21 @@ X_train, X_test, y_train, y_test = train_test_split(
     x_vector,
     y_vector,
     test_size=0.2,
-    random_state=42,
+    random_state=RANDOM_STATE,
 )
-ic(X_train.count()[0], X_test.count()[0])
+X_train.drop("PassengerId", axis=1, inplace=True)
+
+PassengerId = pd.DataFrame(X_test["PassengerId"])
+X_test.drop("PassengerId", axis=1, inplace=True)
+
+ic(X_train.shape[0], X_test.shape[0])
 
 
 # Prepare model
 model = keras.Sequential(
     [
-        layers.Dense(2**6, activation="relu", input_shape=[len(x_vector.columns)]),
-        layers.Dense(2**4, activation="relu", input_shape=[len(x_vector.columns)]),
+        layers.Dense(2**6, activation="relu", input_shape=[len(X_train.columns)]),
+        layers.Dense(2**4, activation="relu", input_shape=[len(X_train.columns)]),
         layers.Dense(1, activation="sigmoid"),
     ]
 )
@@ -126,7 +152,7 @@ model.summary()
 # Compile model
 model_checkpoint = ModelCheckpoint(
     "best_model_keras.h5",
-    monitor="val_Accuracy",
+    monitor="val_f1_score",
     save_best_only=True,
     mode="max",
     verbose=1,
@@ -135,12 +161,14 @@ optimizer = keras.optimizers.Adam()
 model.compile(
     optimizer=optimizer,
     loss="binary_crossentropy",
-    metrics=["Accuracy", "Precision", "Recall"],
+    metrics=["Accuracy", "Precision", "Recall", f1_score],
 )
 
 
 if os.path.exists("best_model_keras.h5") and not RELOAD:
-    best_model_keras = keras.models.load_model("best_model_keras.h5")
+    best_model_keras = keras.models.load_model(
+        "best_model_keras.h5", custom_objects={"f1_score": f1_score}
+    )
     ic("Loaded best model from checkpoint.")
 else:
     ic("No saved model found. Training a new model.")
@@ -154,7 +182,10 @@ else:
         validation_data=(X_test, y_test),
         callbacks=[model_checkpoint],
     )
-    best_model_keras = keras.models.load_model("best_model_keras.h5")
+
+    best_model_keras = keras.models.load_model(
+        "best_model_keras.h5", custom_objects={"f1_score": f1_score}
+    )
 
 
 assert isinstance(best_model_keras, keras.Model)
@@ -163,11 +194,12 @@ assert isinstance(best_model_keras, keras.Model)
 test_results = best_model_keras.evaluate(X_test, y_test)
 
 ic("Test Results:")
+ic(f"F1-score: {test_results[4]}")
 ic(f"Accuracy: {test_results[1]}")
 ic(f"Precision: {test_results[2]}")
 ic(f"Recall: {test_results[3]}")
 
-if SPECIAL_OUTPUT:
+if SPECIAL_OUTPUT_VERBOSE:
     # Get predictions on the test set
     y_test_pred = best_model_keras.predict(X_test)
 
@@ -184,8 +216,10 @@ if SPECIAL_OUTPUT:
     )
 
     # Add an index column to X_test for joining
+    X_test["PassengerId"] = PassengerId
     X_test_with_index = X_test.reset_index(drop=True)
     X_test_with_index = X_test_with_index["PassengerId"]
+    X_test.drop("PassengerId", axis=1, inplace=True)
 
     # Join X_test with the test results DataFrame on the index
     joined_test_data = pd.concat([X_test_with_index, test_results_df], axis=1)
@@ -194,5 +228,49 @@ if SPECIAL_OUTPUT:
     )
     all_data_with_results = all_data_with_results.drop(["Survived_x"], axis=1)
 
-    # Print the joined DataFrame
+    # ic the joined DataFrame
     ic(all_data_with_results.head(20))
+
+
+##############################################################################
+ic("RandomForest Classifier")
+
+from sklearn.ensemble import RandomForestClassifier
+
+clf = RandomForestClassifier(
+    n_estimators=1_000,
+    random_state=RANDOM_STATE,
+    verbose=1,
+    n_jobs=2,
+)
+
+clf.fit(
+    X_train,
+    y_train,
+)
+y_pred = clf.predict(X_test)
+
+# Display classification report for more detailed metrics
+print("\n")
+ic(classification_report(y_test, y_pred, digits=4))
+
+
+##############################################################################
+ic("Logistic Regression")
+
+from sklearn.linear_model import LogisticRegression
+
+logistic_model = LogisticRegression(
+    random_state=RANDOM_STATE,
+    verbose=1,
+    max_iter=100_000,
+    solver="lbfgs",
+)
+
+logistic_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = logistic_model.predict(X_test)
+
+print("\n")
+ic(classification_report(y_test, y_pred, digits=4))
