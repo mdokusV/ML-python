@@ -31,7 +31,7 @@ def f1_score(y_true, y_pred):
     return f1
 
 
-RELOAD = True
+RELOAD = False
 SPECIAL_OUTPUT_VERBOSE = False
 RANDOM_STATE = 12
 
